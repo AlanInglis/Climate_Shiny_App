@@ -2,6 +2,7 @@ library(shiny)
 library(ggplot2)
 library(mgcv)  # For GAM
 library(readr)  # For read_csv()
+library(forecast)
 # Assuming your updated function is saved in "climate_pred_plot.R"
 source("climate_pred_plot.R")
 

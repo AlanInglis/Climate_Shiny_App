@@ -58,7 +58,7 @@ t4 <- function(data, method = "LM", baseTemp = NULL, windowSize = 5, showMA = "n
   } else if (method == "ARIMA") {
     # Convert data to a time series object for ARIMA
     ts_data <- ts(data$Temperature, start = min(data$Year), frequency = 1)
-    model_fit <- auto.arima(ts_data)
+    model_fit <- forecast::auto.arima(ts_data)
   } else {
     stop("Unsupported method")
   }
