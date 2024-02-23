@@ -1,105 +1,84 @@
-
-
 library(shiny)
 library(ggplot2)
 library(mgcv)  # For GAM
 library(readr)  # For read_csv()
+library(forecast)
 
-source("climate_pred_plot.R")
+# need this line to deploy app
+source("pred_plot_final.R")  
 
+# Preload datasets
+dataset1 <- read_csv("global_temps.csv", col_types = cols(Year = col_double(), Temperature = col_double()))
+dataset2 <- read_csv("global_temps_fake.csv", col_types = cols(Year = col_double(), Temperature = col_double()))
 
+# datasets for dropdown
+datasets <- list("Dataset 1" = dataset1, "Dataset 2" = dataset2)
+
+# shiny function
 shinyGlobalTemp <- function() {
   ui <- fluidPage(
     titlePanel("Temperature Prediction"),
     
-    # Main sidebar and plot layout
     sidebarLayout(
       sidebarPanel(
-        fileInput("fileUpload", "Upload CSV Files", accept = ".csv", multiple = TRUE),
-        uiOutput("datasetSelectorUI"),  # For dataset selection
+        # Dropdown for preloaded datasets
+        selectInput("selectedDataset", "Choose a dataset:", choices = names(datasets)),
+        # select prediction method
         selectInput("predictionMethod", "Select Prediction Method:",
-                    choices = c("GAM" = "GAM", "LM" = "LM", "GLM" = "GLM")),
-        
-        # Positioning the wellPanel directly in sidebar
+                    choices = c("GAM" = "GAM", "ARIMA" = "ARIMA", "LM" = "LM", "GLM" = "GLM")),
+        # select moving average
+        selectInput("showMA", "Select Moving Average:",
+                    choices = c("None" = "none", "CMA" = "CMA", "OSMA" = "OSMA")),
+        # moving average window size
+        numericInput("windowSize", "Window Size for Moving Average:", value = 5, min = 1, step = 1),
+        # show original data
+        radioButtons("showData", "Display Original Data Line:",
+                     choices = list("Show" = "TRUE", "Hide" = "FALSE"),
+                     selected = "TRUE"),
+        # show text
         wellPanel(
           div(style = "text-align: center;", htmlOutput("targetYearMessage")),
-          div(style = "text-align: center;", htmlOutput("baseTempText")),
+          div(style = "text-align: center;", htmlOutput("baseTempText"))
         )
       ),
+      
       mainPanel(
+        #main plot
         plotOutput("temperaturePlot", width = "100%", height = "600px"),
-        # slider below the plot
+        # slider bar
         sliderInput("yearRange", "Select Year Range:",
                     width = "100%",
-                    min = 1800, max = 2023, 
-                    value = c(1800, 1850), step = 1, sep = "")
+                    min = 1880, max = 2023, 
+                    value = c(1900, 1950), step = 1, sep = "")
       )
     )
   )
+  
   server <- function(input, output, session) {
-    # Store uploaded data
-    datasets <- reactiveValues(dataList = list())
-    
-    observeEvent(input$fileUpload, {
-      req(input$fileUpload)
-      # Reset dataList when new files are uploaded
-      datasets$dataList <- list()
-      # Read each uploaded file
-      for (i in seq_along(input$fileUpload$name)) {
-        file <- input$fileUpload$datapath[i]
-        datasets$dataList[[input$fileUpload$name[i]]] <- readr::read_csv(file, col_types = cols(
-          Year = col_double(),
-          Temperature = col_double()
-        ))
-      }
-      # Update dataset selection dropdown
-      updateSelectInput(session, "selectedDataset", choices = names(datasets$dataList))
-    })
-    
-    output$datasetSelectorUI <- renderUI({
-      if (length(datasets$dataList) > 0) {
-        selectInput("selectedDataset", "Choose a dataset:", choices = names(datasets$dataList))
-      }
-    })
-    
-    # Reactive expression for the selected dataset
+    # reactive box for the selected data
     selectedData <- reactive({
-      req(input$selectedDataset)
-      datasets$dataList[[input$selectedDataset]]
-    })
-    
-    observe({
-      df <- selectedData()
-      if (!is.null(df)) {
-        yrRange <- range(df$Year, na.rm = TRUE)
-        updateSliderInput(session, "yearRange", min = min(yrRange), max = max(yrRange), value = yrRange)
-      }
+      datasets[[input$selectedDataset]]
     })
     
     output$baseTempText <- renderText({
       df <- selectedData()
-      if (is.null(df)) return("‣ Base Temperature: NA")
       baseTempRange <- input$yearRange
       adjustedData <- df[df$Year >= baseTempRange[1] & df$Year <= baseTempRange[2], ]
       bt <- mean(adjustedData$Temperature, na.rm = TRUE)
       HTML(sprintf("‣ Base Temperature: <b>%.2f°C</b>", bt))
     })
     
+    # actual function in pred_plot.R
     output$temperaturePlot <- renderPlot({
       df <- selectedData()
-      if (is.null(df)) return()
-      baseTempRange <- input$yearRange 
-      result <- generate_prediction_plot(df, input$predictionMethod, baseTempRange)
-      output$targetYearMessage <- renderText({  HTML(sprintf("‣ 1.5°C increase by: <b>%s</b>", result$target_year)) })
+      baseTempRange <- input$yearRange
+      result <- generate_pred_plot(df, method = input$predictionMethod, windowSize = input$windowSize, showMA = input$showMA, baseTemp = baseTempRange, showData = as.logical(input$showData))
+      output$targetYearMessage <- renderText({ HTML(sprintf("‣ 1.5°C increase by: <b>%s</b>", result$target_year)) })
       return(result$plot)
     })
-    
   }
   
   shinyApp(ui = ui, server = server)
 }
 
-
-
 shinyGlobalTemp()
-
