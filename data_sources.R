@@ -92,7 +92,6 @@ write_csv(ERA_5,
 
 # HAD CRUT4 Kriging
 # https://climexp.knmi.nl/data/ihad4_krig_v2_0_0_gl.dat
-
 HAD_CRUT4_Krig <- read_fwf(file = 'https://climexp.knmi.nl/data/ihad4_krig_v2_0_0_gl.dat', 
                               fwf_widths(c(8, 8), c("YearFraction", "Anomaly")), 
                               col_types = cols(YearFraction = col_double(), Anomaly = col_double()),
@@ -124,7 +123,21 @@ write_csv(Berkeley,
 
 
 
+# NASA
+# https://climexp.knmi.nl/data/igiss_al_gl_m.dat
 
+NASA <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
+                  fwf_widths(c(6, rep(15, 12)), c("Year", month.abb)),
+                  skip = 12,
+                  na = "-999.9000",
+                  show_col_types = FALSE) %>% 
+  pivot_longer(cols = -Year, 
+               names_to = "Month", 
+               values_to = "Anomaly") %>% 
+  mutate(Month = match(Month, month.abb)) %>% 
+  mutate(Year_num = as.numeric(Year) + (Month - 1)/12)
+write_csv(NASA, 
+          file = "data/NASA.csv")
 
 
 

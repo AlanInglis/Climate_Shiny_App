@@ -9,7 +9,8 @@ ui <- fluidPage(
   titlePanel("Have we reached 1.5C yet?"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("dataName", "Choose a dataset", choices = c("HADCRUT5", 
+      selectInput("dataName", "Choose a dataset", choices = c("NASA", 
+                                                              "HADCRUT5", 
                                                               "CRUTEM5", 
                                                               "HADSST",
                                                               "GISTEMP",
@@ -30,7 +31,8 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   output$yearInput <- renderUI({
-    startYears <- c(HADCRUT5 = 1850, 
+    startYears <- c(NASA = 1880,
+                    HADCRUT5 = 1850, 
                     CRUTEM5 = 1857, 
                     HADSST = 1850, 
                     GISTEMP = 1880, 
