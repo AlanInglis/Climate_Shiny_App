@@ -86,12 +86,11 @@ server <- function(input, output) {
       geom_line(alpha = 0.7) + 
       scale_colour_manual(values = c("black", "red")) +
       theme_bw() +
-      labs(y = "Temperature anomaly (°C)", x = "Year") +
       scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) + 
       scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + 
       labs(title = paste0(data_name," with ", method, " smoothing"), 
            subtitle = message,
-           y = "anomaly (°C)", x = "Year") + 
+           y = "Temperature anomaly (°C)", x = "Year") + 
       theme(legend.position = "bottom",
             legend.title = element_blank(),
             legend.justification="right",
