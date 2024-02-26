@@ -9,10 +9,10 @@ ui <- fluidPage(
   titlePanel("Have we reached 1.5C yet?"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("dataName", "Choose a Dataset", choices = c("HADCRUT5", "CRUTEM5")),
-      numericInput("minYear", "Start of Pre-Industrial Period", value = 1850, min = 1850, max = 2024),
-      numericInput("maxYear", "End of Pre-Industrial Period", value = 1870, min = 1850, max = 2024),
-      pickerInput("method", "Choose a Method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"), options = list(`style` = "btn-info")),
+      selectInput("dataName", "Choose a dataset", choices = c("HADCRUT5", "CRUTEM5")),
+      numericInput("minYear", "Start of pre-industrial period", value = 1850, min = 1850, max = 2024),
+      numericInput("maxYear", "End of pre-industrial period", value = 1870, min = 1850, max = 2024),
+      pickerInput("method", "Choose a method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"), options = list(`style` = "btn-info")),
       width = 3
     ),
     mainPanel(
@@ -82,6 +82,7 @@ server <- function(input, output) {
                            ordered = TRUE)) %>%
       na.omit() %>% 
       ggplot(aes(x = Year_num, y = Value, colour = Type)) +
+      geom_hline(yintercept = 0, linetype = "dotted") +
       geom_line(alpha = 0.7) + 
       scale_colour_manual(values = c("black", "red")) +
       theme_bw() +
