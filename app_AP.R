@@ -9,7 +9,14 @@ ui <- fluidPage(
   titlePanel("Have we reached 1.5C yet?"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("dataName", "Choose a dataset", choices = c("HADCRUT5", "CRUTEM5")),
+      selectInput("dataName", "Choose a dataset", choices = c("HADCRUT5", 
+                                                              "CRUTEM5", 
+                                                              "HADSST",
+                                                              "GISTEMP",
+                                                              "NOAA_NCEI",
+                                                              "ERA_5",
+                                                              "HAD_CRUT4_Kriging",
+                                                              "Berkeley")),
       numericInput("minYear", "Start of pre-industrial period", value = 1850, min = 1850, max = 2024),
       numericInput("maxYear", "End of pre-industrial period", value = 1870, min = 1850, max = 2024),
       pickerInput("method", "Choose a method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"), options = list(`style` = "btn-info")),
