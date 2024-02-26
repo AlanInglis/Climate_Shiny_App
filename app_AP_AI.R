@@ -3,11 +3,6 @@ library(tidyverse)
 library(shinyWidgets)
 library(mgcv)
 library(forecast)
-library(shiny)
-library(tidyverse)
-library(shinyWidgets)
-library(mgcv)
-library(forecast)
 
 # UI
 ui <- fluidPage(
