@@ -21,7 +21,7 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      plotOutput("anomalyPlot")
+      plotOutput("anomalyPlot", height = "50vh")
     )
   )
 )
