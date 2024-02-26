@@ -3,46 +3,41 @@ library(tidyverse)
 library(shinyWidgets)
 library(mgcv)
 library(forecast)
-# Shiny app should now pick the first 20 years from each dataset by default
+library(shiny)
+library(tidyverse)
+library(shinyWidgets)
+library(mgcv)
+library(forecast)
 
+# UI
 ui <- fluidPage(
-  titlePanel("Have we reached 1.5C yet?"),
+  titlePanel("Have we reached 1.5°C yet?"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("dataName", "Choose a dataset", choices = c("NASA", 
-                                                              "HADCRUT5", 
-                                                              "CRUTEM5", 
-                                                              "HADSST",
-                                                              "GISTEMP",
-                                                              "NOAA_NCEI",
-                                                              "ERA_5",
-                                                              "HAD_CRUT4_Krig",
-                                                              "Berkeley")),
+      # select data
+      selectInput("dataName", "Choose a dataset", choices = c("NASA", "HADCRUT5", "CRUTEM5", "HADSST", "GISTEMP", "NOAA_NCEI", "ERA_5", "HAD_CRUT4_Krig", "Berkeley")),
+      # select years
       uiOutput("yearInput"),
+      # select smoothing method
       pickerInput("method", "Choose a method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"), options = list(`style` = "btn-info")),
-      width = 3
+      # add text
+      wellPanel(
+        div(style = "text-align: center;", htmlOutput("tempAnomalyMessage"))
+      )
     ),
     mainPanel(
-      plotOutput("anomalyPlot"),
-      width = 9
+      plotOutput("anomalyPlot")
     )
   )
 )
 
+#  server 
 server <- function(input, output) {
   output$yearInput <- renderUI({
-    startYears <- c(NASA = 1880,
-                    HADCRUT5 = 1850, 
-                    CRUTEM5 = 1857, 
-                    HADSST = 1850, 
-                    GISTEMP = 1880, 
-                    NOAA_NCEI = 1880, 
-                    ERA_5 = 1950, 
-                    HAD_CRUT4_Krig = 1850, 
-                    Berkeley = 1850)
+    startYears <- c(NASA = 1880, HADCRUT5 = 1850, CRUTEM5 = 1857, HADSST = 1850, GISTEMP = 1880, NOAA_NCEI = 1880, ERA_5 = 1950, HAD_CRUT4_Krig = 1850, Berkeley = 1850)
     
     startYear <- startYears[input$dataName]
-    endYear <- startYear + 20 # First 20 years
+    endYear <- startYear + 20  # First 20 years
     
     tagList(
       numericInput("minYear", "Start of pre-industrial period", value = startYear, min = startYear, max = 2024),
@@ -50,14 +45,13 @@ server <- function(input, output) {
     )
   })
   
-  output$anomalyPlot <- renderPlot({
+  calcValues <- reactive({
+    req(input$dataName, input$method)
     data_name <- input$dataName
     method <- input$method
     
     # Load in the data set using data_name
-    data <- read_csv(paste0("data/",data_name,".csv"), 
-                     show_col_types = FALSE) %>% 
-      na.omit()
+    data <- read_csv(paste0("data/", data_name, ".csv"), show_col_types = FALSE) %>% na.omit()
     
     # Renormalise the data based on the selected pre-industrial period
     data$Anomaly <- data$Anomaly - mean(data$Anomaly[data$Year >= input$minYear & data$Year <= input$maxYear])
@@ -91,15 +85,27 @@ server <- function(input, output) {
                  "Cubic orthogonal regression")
     )
     
-    
-    # Get the message
     curr_pred_temp <- data$Smooth[nrow(data)]
     curr_year <- data$Year[nrow(data)]
     curr_month <- data$Month[nrow(data)]
-    message <- paste0("The current temperature anomaly is ", round(curr_pred_temp, 2), "°C in ", 
-                      month.abb[curr_month],'-',curr_year, 
-                      ' above pre-industrial levels.\nSmoothed line = ',
+    
+    message <- paste0('Smoothed line = ',
                       method_desc$detail[method_desc$names == method])
+    
+    message_2 <- paste0("The current temperature anomaly is <b>", round(curr_pred_temp, 2), "°C in ", 
+                        month.abb[curr_month], '-', curr_year, "</b> above pre-industrial levels.")
+    
+    
+    list(data = data, message = message, message_2 = message_2)
+    
+  })
+  
+  output$anomalyPlot <- renderPlot({
+    values <- calcValues()
+    data <- values$data
+    message <- values$message
+    data_name <- input$dataName
+    method <- input$method
     
     # Create the ggplot
     data %>% pivot_longer(cols = c(Anomaly, Smooth), 
@@ -123,8 +129,13 @@ server <- function(input, output) {
             legend.margin=margin(0,0,0,0),
             legend.box.margin=margin(-10,0,-10,-10))
   })
+  
+  # used to make the text in text box
+  output$tempAnomalyMessage <- renderUI({
+    values <- calcValues()
+    HTML(values$message_2)
+  })
 }
 
-
-# Run the application
+# run
 shinyApp(ui = ui, server = server)
