@@ -93,7 +93,7 @@ write_csv(ERA_5,
 # HAD CRUT4 Kriging
 # https://climexp.knmi.nl/data/ihad4_krig_v2_0_0_gl.dat
 
-HAD_CRUT4_Kriging <- read_fwf(file = 'https://climexp.knmi.nl/data/ihad4_krig_v2_0_0_gl.dat', 
+HAD_CRUT4_Krig <- read_fwf(file = 'https://climexp.knmi.nl/data/ihad4_krig_v2_0_0_gl.dat', 
                               fwf_widths(c(8, 8), c("YearFraction", "Anomaly")), 
                               col_types = cols(YearFraction = col_double(), Anomaly = col_double()),
                               skip = 10)  %>%
@@ -105,8 +105,8 @@ HAD_CRUT4_Kriging <- read_fwf(file = 'https://climexp.knmi.nl/data/ihad4_krig_v2
   select(-id)  |> 
   select(Year, Month, Anomaly) |> 
   mutate(Year_num = as.numeric(Year) + (Month - 1)/12)
-write_csv(HAD_CRUT4_Kriging, 
-          file = "data/HAD_CRUT4_Kriging.csv")
+write_csv(HAD_CRUT4_Krig, 
+          file = "data/HAD_CRUT4_Krig.csv")
 
 # Berkeley
 # https://climexp.knmi.nl/data/it2m_land_ocean_best.dat

@@ -15,7 +15,7 @@ ui <- fluidPage(
                                                               "GISTEMP",
                                                               "NOAA_NCEI",
                                                               "ERA_5",
-                                                              "HAD_CRUT4_Kriging",
+                                                              "HAD_CRUT4_Krig",
                                                               "Berkeley")),
       numericInput("minYear", "Start of pre-industrial period", value = 1850, min = 1850, max = 2024),
       numericInput("maxYear", "End of pre-industrial period", value = 1870, min = 1850, max = 2024),
