@@ -10,11 +10,11 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       # select data
-      selectInput("dataName", "Choose a dataset", choices = c("NASA", "HADCRUT5", "CRUTEM5", "HADSST", "GISTEMP", "NOAA_NCEI", "ERA_5", "HAD_CRUT4_Krig", "Berkeley")),
+      selectInput("dataName", "Choose a dataset", choices = c("NASA_GISS", "HADCRUT5", "CRUTEM5", "HADSST", "GISTEMP", "NOAA_NCEI", "ERA_5", "HAD_CRUT4_Krig", "Berkeley")),
       # select years
       uiOutput("yearInput"),
       # select smoothing method
-      pickerInput("method", "Choose a method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"), options = list(`style` = "btn-info")),
+      pickerInput("method", "Choose a method", choices = c("Spline", "AR1", "OSMA10", "OSMA20", "COR", "ARIMA"), options = list(`style` = "btn-info")),
       # add text
       wellPanel(
         div(style = "text-align: center;", htmlOutput("tempAnomalyMessage"))
@@ -29,7 +29,7 @@ ui <- fluidPage(
 #  server 
 server <- function(input, output) {
   output$yearInput <- renderUI({
-    startYears <- c(NASA = 1880, HADCRUT5 = 1850, CRUTEM5 = 1857, HADSST = 1850, GISTEMP = 1880, NOAA_NCEI = 1880, ERA_5 = 1950, HAD_CRUT4_Krig = 1850, Berkeley = 1850)
+    startYears <- c(NASA_GISS = 1880, HADCRUT5 = 1850, CRUTEM5 = 1857, HADSST = 1850, GISTEMP = 1880, NOAA_NCEI = 1880, ERA_5 = 1950, HAD_CRUT4_Krig = 1850, Berkeley = 1850)
     
     startYear <- startYears[input$dataName]
     endYear <- startYear + 20  # First 20 years
@@ -59,6 +59,10 @@ server <- function(input, output) {
       ts_data <- ts(data$Anomaly, start = min(data$Year_num), frequency = 1)
       model_fit <- Arima(ts_data, order = c(1,0,0))
       data$Smooth <- model_fit$fitted
+    } else if(method == "ARIMA") {
+        ts_data <- ts(data$Anomaly, start = min(data$Year_num), frequency = 1)
+        model_fit <- forecast::auto.arima(ts_data)
+        data$Smooth <- model_fit$fitted
     } else if(method == "COR") {
       model_fit <- lm(Anomaly ~ poly(Year_num, 3), data = data)
       data$Smooth <- model_fit$fitted.values
@@ -72,12 +76,13 @@ server <- function(input, output) {
     
     # Add method descriptions
     method_desc <- data.frame(
-      names = c("Spline", "AR1", "OSMA10", "OSMA20", "COR"),
+      names = c("Spline", "AR1", "OSMA10", "OSMA20", "COR", "ARIMA"),
       detail = c("Penalised cubic regression spline", 
                  "Auto-regressive model with order 1", 
-                 "One sided moving average of 10 years", 
-                 "One sided moving average of 20 years", 
-                 "Cubic orthogonal regression")
+                 "One sided moving average over 10 years", 
+                 "One sided moving average over 20 years", 
+                 "Cubic orthogonal regression",
+                 "Best fit ARIMA model")
     )
     
     curr_pred_temp <- data$Smooth[nrow(data)]

@@ -125,8 +125,7 @@ write_csv(Berkeley,
 
 # NASA
 # https://climexp.knmi.nl/data/igiss_al_gl_m.dat
-
-NASA <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
+NASA_GISS <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
                   fwf_widths(c(6, rep(15, 12)), c("Year", month.abb)),
                   skip = 12,
                   na = "-999.9000",
@@ -136,8 +135,8 @@ NASA <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
                values_to = "Anomaly") %>% 
   mutate(Month = match(Month, month.abb)) %>% 
   mutate(Year_num = as.numeric(Year) + (Month - 1)/12)
-write_csv(NASA, 
-          file = "data/NASA.csv")
+write_csv(NASA_GISS, 
+          file = "data/NASA_GISS.csv")
 
 
 
