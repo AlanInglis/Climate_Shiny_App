@@ -1,0 +1,12 @@
+name: Climate_Shiny_App
+title: Climate_Shiny_App
+username: andrewcparnell
+account: andrewcparnell
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11335954
+bundleId: 8300258
+url: https://andrewcparnell.shinyapps.io/Climate_Shiny_App/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
