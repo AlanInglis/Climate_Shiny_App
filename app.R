@@ -14,7 +14,7 @@ ui <- fluidPage(
       # select years
       uiOutput("yearInput"),
       # select smoothing method
-      pickerInput("method", "Choose a method", choices = c("LOESS", "Spline", "AR1", "OSMA10", "OSMA20", "COR", "ARIMA", "30yrlt"), options = list(`style` = "btn-info")),
+      pickerInput("method", "Choose a method", choices = c("LOESS", "Spline", "OSMA10", "OSMA20", "COR", "ARIMA", "30yrlt", "20yrlt"), options = list(`style` = "btn-info")),
       # add text
       wellPanel(
         div(style = "text-align: center;", htmlOutput("tempAnomalyMessage"))
@@ -81,11 +81,18 @@ server <- function(input, output) {
       for(i in 30:nrow(data)) {
         data$Smooth[i] <- lm(Anomaly[(i-29):i] ~ Year_num[(i-29):i], data = data)$fitted.values[30]
       }
+    } else if(method == "20yrlt") {
+      # Estimate a 20 year linear trend
+      data$Smooth <- rep(NA, nrow(data))
+      for(i in 20:nrow(data)) {
+        data$Smooth[i] <- lm(Anomaly[(i-19):i] ~ Year_num[(i-19):i], data = data)$fitted.values[20]
+      }
     }
     
     # Add method descriptions
     method_desc <- data.frame(
-      names = c("LOESS", "Spline", "AR1", "OSMA10", "OSMA20", "COR", "ARIMA", "30yrlt"),
+      names = c("LOESS", "Spline", "AR1", "OSMA10", "OSMA20", "COR", 
+                "ARIMA", "30yrlt", "20yrlt"),
       detail = c("Local polynomial regression",
                  "Penalised cubic regression spline", 
                  "Auto-regressive model with order 1", 
@@ -93,7 +100,8 @@ server <- function(input, output) {
                  "One sided moving average over 20 years", 
                  "Cubic orthogonal regression",
                  "Best fit ARIMA model",
-                 "Last point of 30-year linear trend")
+                 "Last point of 30-year linear trend",
+                 "Last point of 20-year linear trend")
     )
     
     curr_pred_temp <- data$Smooth[nrow(data)]
