@@ -5,7 +5,7 @@ account: andrewcparnell
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11335954
-bundleId: 8300258
+bundleId: 8302987
 url: https://andrewcparnell.shinyapps.io/Climate_Shiny_App/
 version: 1
 asMultiple: FALSE

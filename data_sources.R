@@ -47,20 +47,20 @@ write_csv(HADSST,
   
 
 
-# GISTEMP
-# https://climexp.knmi.nl/data/igiss_al_gl_m.dat
-GISTEMP <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
-                     fwf_widths(c(6, rep(15, 12)), c("Year", month.abb)),
-                     skip = 12,
-                     na = "-999.9000",
-                     show_col_types = FALSE) |> 
-  pivot_longer(cols = -Year, 
-               names_to = "Month", 
-               values_to = "Anomaly") |>  
-  mutate(Month = match(Month, month.abb)) |> 
-  mutate(Year_num = as.numeric(Year) + (Month - 1)/12)
-write_csv(GISTEMP, 
-          file = "data/GISTEMP.csv")
+# # GISTEMP
+# # https://climexp.knmi.nl/data/igiss_al_gl_m.dat
+# GISTEMP <-  read_fwf(file = "https://climexp.knmi.nl/data/igiss_al_gl_m.dat",
+#                      fwf_widths(c(6, rep(15, 12)), c("Year", month.abb)),
+#                      skip = 12,
+#                      na = "-999.9000",
+#                      show_col_types = FALSE) |> 
+#   pivot_longer(cols = -Year, 
+#                names_to = "Month", 
+#                values_to = "Anomaly") |>  
+#   mutate(Month = match(Month, month.abb)) |> 
+#   mutate(Year_num = as.numeric(Year) + (Month - 1)/12)
+# write_csv(GISTEMP, 
+#           file = "data/GISTEMP.csv")
 
 # NOAA/NCEI
 # https://climexp.knmi.nl/data/incdc_gl.dat
